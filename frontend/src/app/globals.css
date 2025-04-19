@@ -1,0 +1,17 @@
+@import "tailwindcss";
+
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Add this to your global stylesheet */
+.custom-toast {
+    background: linear-gradient(to right, #ca4d4d, #ca4d4d) !important; /* red gradient */
+    color: white !important;
+    border-radius: 0.75rem !important;
+    font-family: 'Inter', sans-serif !important;
+    font-size: 0.95rem !important;
+    box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1) !important;
+  }
+  
