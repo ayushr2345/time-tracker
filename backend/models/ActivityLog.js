@@ -4,15 +4,15 @@ const activityLogSchema = new mongoose.Schema(
   {
     activityId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Activity",  // Reference to the activity collection
+      ref: "Activity", // Reference to the activity collection
       required: true,
     },
     startTime: {
-      type: String,  // Storing time as string (HH:MM format)
+      type: String, // Storing time as string (HH:MM format)
       required: true,
     },
     endTime: {
-      type: String,  // Storing time as string (HH:MM format)
+      type: String, // Storing time as string (HH:MM format)
       required: true,
     },
   },

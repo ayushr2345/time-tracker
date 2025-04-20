@@ -1,11 +1,13 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 const {
   getActivityLogs,
   addActivityLog,
-} = require('../controllers/activityLogController');
+  deleteActivityLogsByActivityId,
+} = require("../controllers/activityLogController");
 
-router.get('/', getActivityLogs);
-router.post('/', addActivityLog);
+router.get("/", getActivityLogs);
+router.post("/", addActivityLog);
+router.delete("/:id", deleteActivityLogsByActivityId);
 
 module.exports = router;

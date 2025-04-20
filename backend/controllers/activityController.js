@@ -1,4 +1,4 @@
-const Activity = require('../models/Activity');
+const Activity = require("../models/Activity");
 
 // Get all activities
 exports.getActivities = async (req, res) => {
@@ -27,8 +27,19 @@ exports.deleteActivity = async (req, res) => {
   const { id } = req.params;
   try {
     await Activity.findByIdAndDelete(id);
-    res.json({ message: 'Activity deleted' });
+    res.json({ message: "Activity deleted" });
   } catch (err) {
-    res.status(404).json({ error: 'Activity not found' });
+    res.status(404).json({ error: "Activity not found" });
+  }
+};
+
+// Get activity name
+exports.getActivityName = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const activity = await Activity.findById(id);
+    res.json(activity);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 };
