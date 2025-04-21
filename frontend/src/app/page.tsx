@@ -229,11 +229,11 @@ export default function HomePage() {
   };
 
   const handleDeleteActivity = async (id: string) => {
+    const deletedActivityLogs = await deleteActivityLogs(id);
     const deletedActivity = await deleteActivity(id);
     if (deletedActivity) {
       setActivities(activities.filter((act) => act._id !== id));
     }
-    const deletedActivityLogs = await deleteActivityLogs(id);
     refreshLogs();
     setRefreshKey((prev) => prev + 1);
   };

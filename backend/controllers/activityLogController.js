@@ -29,19 +29,16 @@ exports.addActivityLog = async (req, res) => {
   }
 };
 
-// TODO: Make this work, currently not deleting any logs
 // Delete Activity Logs
 exports.deleteActivityLogsByActivityId = async (req, res) => {
-  const { activityId } = req.params;
+  const activityId = req.params.id;
   try {
     // Convert string to ObjectId
     const objectId = new mongoose.Types.ObjectId(activityId);
-    console.log(objectId);
 
     // Delete logs with that ObjectId
     const result = await ActivityLog.deleteMany({ activityId: objectId });
 
-    console.log(result);
     if (result.deletedCount > 0) {
       res.json({ message: "Activity logs deleted successfully" });
     } else {
