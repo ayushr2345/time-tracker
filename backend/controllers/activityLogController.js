@@ -37,6 +37,10 @@ exports.deleteActivityLogsByActivityId = async (req, res) => {
     const objectId = new mongoose.Types.ObjectId(activityId);
 
     // Delete logs with that ObjectId
+    const findRes = await ActivityLog.find({ activityId: objectId });
+    if (findRes.length === 0) {
+      return res.json({ message: "No activity logs found with that activityId" });
+    }
     const result = await ActivityLog.deleteMany({ activityId: objectId });
 
     if (result.deletedCount > 0) {

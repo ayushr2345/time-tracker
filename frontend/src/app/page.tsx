@@ -9,6 +9,30 @@ import axios from "axios";
 import { start } from "repl";
 import { ToastContainer, toast, Slide } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
+} from "recharts";
+
+// Define colors for charts
+const chartColors = [
+  "#8884d8",
+  "#82ca9d",
+  "#ffc658",
+  "#ff7f50",
+  "#a4de6c",
+  "#d0ed57",
+  "#8dd1e1",
+  "#83a6ed",
+];
 
 const apiUrl = "http://localhost:5000/api";
 
@@ -176,14 +200,22 @@ export default function HomePage() {
   const [elapsedTime, setElapsedTime] = useState<number>(0); // in seconds
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const [isLoadingOverview, setIsLoadingOverview] = useState(true);
-  const [refreshKey, setRefreshKey] = useState(0);
+  const [refreshKey, setRefreshKey] = useState(1);
 
   const tabs = ["Overview", "Timer", "Manual Entry", "Activities"];
 
-  const refreshLogs = async () => {
-    const response = await axios.get(`${apiUrl}/activityLogs`);
-    setLogs(response.data);
-  };
+  // Calculate data for charts
+  const chartData = activities.map((activity, index) => {
+    const logsForActivity = logs.filter(
+      (log) => log.activityId === activity._id
+    );
+    const total = sumLogsByPeriod(logsForActivity, "week");
+    return {
+      name: activity.name,
+      time: parseFloat((total / 3600).toFixed(2)), // convert to hours
+      color: activity.color || chartColors[index % chartColors.length],
+    };
+  });
 
   // Start Timer
   const handleStart = () => {
@@ -216,9 +248,10 @@ export default function HomePage() {
     setElapsedTime(0);
     setStartTime(null);
 
-    addActivityLog(selectedActivityId, startStr, endStr, selectedTab);
-    refreshLogs();
-    setRefreshKey((prev) => prev + 1);
+    (async () => {
+      await addActivityLog(selectedActivityId, startStr, endStr, selectedTab);
+      setRefreshKey((prev) => prev + 1);
+    })();
   };
 
   const handleAddActivity = async (name: string, color: string) => {
@@ -234,7 +267,6 @@ export default function HomePage() {
     if (deletedActivity) {
       setActivities(activities.filter((act) => act._id !== id));
     }
-    refreshLogs();
     setRefreshKey((prev) => prev + 1);
   };
 
@@ -253,11 +285,13 @@ export default function HomePage() {
     };
     getActivities();
   }, []);
+
   useEffect(() => {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
   }, []);
+
   useEffect(() => {
     const getActivityLogs = async () => {
       try {
@@ -270,25 +304,7 @@ export default function HomePage() {
 
     getActivityLogs();
   }, []);
-  useEffect(() => {
-    const getData = async () => {
-      try {
-        setIsLoadingOverview(true); // Start loading
-        const [activitiesRes, logsRes] = await Promise.all([
-          axios.get(`${apiUrl}/activities`),
-          axios.get(`${apiUrl}/activityLogs`),
-        ]);
-        setActivities(activitiesRes.data);
-        setLogs(logsRes.data);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        setIsLoadingOverview(false); // Stop loading
-      }
-    };
 
-    getData();
-  }, []);
   useEffect(() => {
     const getData = async () => {
       setIsLoadingOverview(true);
@@ -297,6 +313,8 @@ export default function HomePage() {
           axios.get(`${apiUrl}/activities`),
           axios.get(`${apiUrl}/activityLogs`),
         ]);
+        console.log(activitiesRes.data);
+        console.log(logsRes.data);
         setActivities(activitiesRes.data);
         setLogs(logsRes.data);
       } catch (error) {
@@ -406,11 +424,63 @@ export default function HomePage() {
                     <h2 className="text-2xl font-bold mb-4 text-white">
                       📈 Weekly Chart per Activity
                     </h2>
-                    <div className="bg-gray-800 border border-gray-700 rounded-xl p-6">
-                      <div className="h-64 w-full bg-gray-700 rounded animate-pulse flex items-center justify-center text-gray-400 text-sm">
-                        Chart Placeholder
+
+                    {chartData.length === 0 ? (
+                      <div className="bg-gray-800 text-gray-400 p-4 rounded-xl text-center">
+                        No data available for charts.
                       </div>
-                    </div>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Bar Chart */}
+                        <div className="bg-gray-800 border border-gray-700 rounded-xl p-4">
+                          <h3 className="text-white mb-2">
+                            Hours Spent Per Activity
+                          </h3>
+                          <ResponsiveContainer width="100%" height={250}>
+                            <BarChart data={chartData}>
+                              <XAxis dataKey="name" stroke="#ccc" />
+                              <YAxis stroke="#ccc" />
+                              <Tooltip />
+                              <Bar dataKey="time">
+                                {chartData.map((entry, index) => (
+                                  <Cell
+                                    key={`bar-${index}`}
+                                    fill={entry.color}
+                                  />
+                                ))}
+                              </Bar>
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </div>
+
+                        {/* Pie Chart */}
+                        <div className="bg-gray-800 border border-gray-700 rounded-xl p-4">
+                          <h3 className="text-white mb-2">
+                            Activity Time Distribution
+                          </h3>
+                          <ResponsiveContainer width="100%" height={250}>
+                            <PieChart>
+                              <Pie
+                                data={chartData}
+                                dataKey="time"
+                                nameKey="name"
+                                outerRadius={90}
+                                label
+                              >
+                                {chartData.map((entry, index) => (
+                                  <Cell
+                                    key={`cell-${index}`}
+                                    fill={entry.color}
+                                  />
+                                ))}
+                              </Pie>
+                              <Tooltip />
+                              <Legend />
+                            </PieChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </div>
+                    )}
                   </section>
 
                   {/* 3. ⏱ Total Time Spent + 📅 Recent Logs (side by side) */}
@@ -514,30 +584,38 @@ export default function HomePage() {
                               const activity = activities.find(
                                 (a) => a._id === log.activityId
                               );
+
+                              // 👇 Combine today's date with the time strings
+                              const today = new Date()
+                                .toISOString()
+                                .split("T")[0]; // "2025-04-20"
+                              const start = new Date(
+                                `${today}T${log.startTime}`
+                              );
+                              const end = new Date(`${today}T${log.endTime}`);
                               const duration =
-                                (new Date(log.endTime).getTime() -
-                                  new Date(log.startTime).getTime()) /
-                                1000;
+                                (end.getTime() - start.getTime()) / 1000;
 
                               return (
                                 <li
                                   key={log._id}
                                   className="px-4 py-3 flex justify-between items-center hover:bg-gray-700 transition"
                                 >
-                                  <div>
+                                  <div className="text-left">
+                                    {" "}
+                                    {/* 👈 Fix activity text alignment */}
                                     <p className="font-semibold text-white">
                                       {activity?.name ?? "Unknown Activity"}
                                     </p>
                                     <p className="text-sm text-gray-400">
-                                      {new Date(log.startTime).toLocaleString()}{" "}
-                                      -{" "}
-                                      {new Date(
-                                        log.endTime
-                                      ).toLocaleTimeString()}
+                                      {start.toLocaleTimeString()} -{" "}
+                                      {end.toLocaleTimeString()}
                                     </p>
                                   </div>
                                   <span className="text-sm font-medium text-blue-400">
-                                    {formatTimeNew(duration)}
+                                    {isNaN(duration)
+                                      ? "Invalid duration"
+                                      : formatTimeNew(duration)}
                                   </span>
                                 </li>
                               );
@@ -552,7 +630,7 @@ export default function HomePage() {
           )}
 
           {selectedTab === "Timer" && (
-            <div className="space-y-6 max-w-md mx-auto">
+            <div className="mt-6 max-w-xl mx-auto space-y-6">
               {/* Heading */}
               <h2 className="text-xl font-semibold text-center text-white flex items-center justify-center gap-2">
                 ⏳ Timer Mode
@@ -691,14 +769,17 @@ export default function HomePage() {
                     const endTime = (
                       document.getElementById("endTime") as HTMLInputElement
                     ).value;
+
                     if (activityId && startTime && endTime) {
-                      addActivityLog(
-                        activityId,
-                        startTime,
-                        endTime,
-                        selectedTab
-                      );
-                      setRefreshKey((prev) => prev + 1);
+                      (async () => {
+                        await addActivityLog(
+                          activityId,
+                          startTime,
+                          endTime,
+                          selectedTab
+                        );
+                        setRefreshKey((prev) => prev + 1);
+                      })();
                     } else {
                       toast.error("❗ Please fill out all fields.");
                     }
@@ -745,18 +826,24 @@ export default function HomePage() {
                 />
                 <button
                   onClick={() => {
-                    const name = (
-                      document.getElementById(
-                        "newActivityName"
-                      ) as HTMLInputElement
-                    ).value;
-                    const color = (
-                      document.getElementById(
-                        "newActivityColor"
-                      ) as HTMLInputElement
-                    ).value;
-                    if (name && color) {
-                      handleAddActivity(name, color);
+                    const nameInput = document.getElementById(
+                      "newActivityName"
+                    ) as HTMLInputElement | null;
+                    const colorInput = document.getElementById(
+                      "newActivityColor"
+                    ) as HTMLInputElement | null;
+
+                    if (nameInput && colorInput) {
+                      const name = nameInput.value.trim();
+                      const color = colorInput.value;
+
+                      if (name && color) {
+                        handleAddActivity(name, color);
+
+                        // Clear the inputs
+                        nameInput.value = "";
+                        colorInput.value = "";
+                      }
                     }
                   }}
                   className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-purple-500 hover:to-pink-500 text-white px-6 py-2 rounded-xl font-semibold transition-all duration-300 shadow-lg"
@@ -795,6 +882,5 @@ export default function HomePage() {
   );
 }
 
-// TODO: When added entry in manual or timer, overview page does not auto update
 // TODO: Recent logs time is invalid, does not update on deletiong or addition of entry or activity
 // TODO: Add chart
