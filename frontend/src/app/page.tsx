@@ -1,12 +1,10 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { sampleActivities } from "../data/activities";
-import { sampleActivityLogs } from "../data/activityLogs";
 import { Activity } from "../types/activity";
 import { ActivityLog } from "../types/activityLog";
 import axios from "axios";
-import { start } from "repl";
+import Head from "next/head";
 import { ToastContainer, toast, Slide } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import {
@@ -328,6 +326,10 @@ export default function HomePage() {
   }, [refreshKey]); // now it reruns on refreshKey change
 
   return (
+    <div>
+    <Head>
+      <link rel="icon" href="/favicon.ico" />
+    </Head>
     <main className="min-h-screen bg-gray-800 text-gray-100 p-6">
       <div className="max-w-4xl mx-auto bg-gray-900 shadow-xl rounded-3xl p-8 space-y-10">
         <h1 className="text-4xl font-bold text-center text-blue-400">
@@ -360,8 +362,8 @@ export default function HomePage() {
               ) : (
                 <>
                   {/* 1. 📊 Time Spent per Activity */}
-                  <section className="my-8">
-                    <h2 className="justify-center text-2xl font-bold mb-6 text-white flex items-center gap-2">
+                  <section>
+                    <h2 className="justify-center text-2xl font-bold mb-6 text-white flex items-center gap-">
                       📊 Time Spent per Activity (This Week)
                       <span className="text-sm text-gray-400 font-normal">
                         (auto-calculated)
@@ -895,6 +897,7 @@ export default function HomePage() {
         </div>
       </div>
     </main>
+    </div>
   );
 }
 
