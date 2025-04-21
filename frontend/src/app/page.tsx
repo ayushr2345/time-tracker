@@ -360,23 +360,28 @@ export default function HomePage() {
               ) : (
                 <>
                   {/* 1. 📊 Time Spent per Activity */}
-                  <section>
-                    <h2 className="text-2xl font-bold mb-4 text-white">
+                  <section className="my-8">
+                    <h2 className="justify-center text-2xl font-bold mb-6 text-white flex items-center gap-2">
                       📊 Time Spent per Activity (This Week)
+                      <span className="text-sm text-gray-400 font-normal">
+                        (auto-calculated)
+                      </span>
                     </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
                       {isLoadingOverview ? (
-                        <div className="h-24 w-full" />
+                        <div className="h-32 w-full col-span-full flex justify-center items-center">
+                          <span className="text-gray-400">Loading...</span>
+                        </div>
                       ) : activities.length === 0 ? (
-                        <div className="col-span-1 md:col-span-2 w-full flex items-center justify-center p-4 bg-gray-800 rounded-lg shadow-md">
-                          <div className="flex items-center justify-center w-full">
+                        <div className="col-span-full w-full flex items-center justify-center p-6 bg-gray-800 rounded-2xl shadow-inner border border-gray-700">
+                          <div className="flex items-center justify-center gap-2">
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
-                              className="w-6 h-6 text-gray-500 mr-2"
+                              className="w-6 h-6 text-gray-500"
                               fill="none"
                               stroke="currentColor"
                               viewBox="0 0 24 24"
-                              aria-hidden="true"
                             >
                               <path
                                 strokeLinecap="round"
@@ -385,8 +390,8 @@ export default function HomePage() {
                                 d="M8 8h.01M16 8h.01M12 16h.01M12 12h.01M12 8h.01"
                               />
                             </svg>
-                            <p className="w-full text-center text-sm text-gray-400 font-semibold">
-                              No activities found.
+                            <p className="text-gray-400 font-medium text-sm">
+                              No activities found for this week.
                             </p>
                           </div>
                         </div>
@@ -403,15 +408,26 @@ export default function HomePage() {
                           return (
                             <div
                               key={activity._id}
-                              className="bg-gradient-to-br from-gray-800 to-gray-700 p-4 rounded-xl shadow-md border-l-4"
+                              className="relative overflow-hidden bg-gradient-to-br from-gray-800 to-gray-700 p-5 rounded-2xl shadow-lg border-l-8 transition-all duration-300 hover:scale-[1.02]"
                               style={{ borderColor: activity.color }}
                             >
-                              <span className="block text-lg font-semibold text-white">
-                                {activity.name}
-                              </span>
-                              <span className="text-sm text-gray-300">
-                                This Week: {formatTimeNew(totalTime)}
-                              </span>
+                              <div className="flex justify-between items-start mb-2">
+                                <h3 className="text-xl font-semibold text-white">
+                                  {activity.name}
+                                </h3>
+                                <div
+                                  className="w-3 h-3 rounded-full"
+                                  style={{ backgroundColor: activity.color }}
+                                ></div>
+                              </div>
+                              <p className="text-gray-400 mt-2">
+                                <span className="text-gray-300">
+                                  ⏱️ Total This Week:
+                                </span>{" "}
+                                <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">
+                                  {formatTimeNew(totalTime)}
+                                </span>
+                              </p>
                             </div>
                           );
                         })
