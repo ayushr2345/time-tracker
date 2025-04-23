@@ -2,6 +2,7 @@ const Activity = require("../models/Activity");
 
 // Get all activities
 exports.getActivities = async (req, res) => {
+  console.log("Fetching all activities");
   try {
     const activities = await Activity.find();
     res.json(activities);

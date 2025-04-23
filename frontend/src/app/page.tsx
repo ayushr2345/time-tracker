@@ -77,7 +77,7 @@ const addActivityLog = async (
       return;
     }
 
-    const response = await axios.post(`${apiUrl}/activityLogs`, {
+    await axios.post(`${apiUrl}/activityLogs`, {
       activityId,
       startTime,
       endTime,
@@ -260,7 +260,7 @@ export default function HomePage() {
   };
 
   const handleDeleteActivity = async (id: string) => {
-    const deletedActivityLogs = await deleteActivityLogs(id);
+    await deleteActivityLogs(id);
     const deletedActivity = await deleteActivity(id);
     if (deletedActivity) {
       setActivities(activities.filter((act) => act._id !== id));
@@ -853,7 +853,7 @@ export default function HomePage() {
 
                       if (nameInput && colorInput) {
                         const name = nameInput.value.trim();
-                        const color = colorInput.value;
+                        const color = colorInput.value || "#3b82f6"; // Tailwind blue-500
 
                         if (name && color) {
                           handleAddActivity(name, color);

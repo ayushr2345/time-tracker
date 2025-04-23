@@ -1,5 +1,5 @@
 export interface ActivityLog {
-  id: string;
+  _id: string;
   activityId: string;
   activityName: string; // optional duplicate for UI display
   startTime: string; // ISO string
