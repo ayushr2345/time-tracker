@@ -105,24 +105,40 @@ const sumLogsByPeriod = (
   period: "today" | "week" | "month" | "lastMonth" | "year"
 ) => {
   const now = new Date();
-  const todayStr = now.toISOString().split("T")[0]; // YYYY-MM-DD
 
-  const startOfToday = new Date(todayStr);
-  const startOfWeek = new Date();
-  const day = startOfWeek.getDay();
-  startOfWeek.setDate(startOfWeek.getDate() - day);
+  const startOfToday = new Date(now);
+  startOfToday.setHours(0, 0, 0, 0);
+
+  const startOfWeek = new Date(now);
+  const day = startOfWeek.getDay(); // 0 (Sun) to 6 (Sat)
+  const diff = day === 0 ? 6 : day - 1; // Treat Monday as start
+  startOfWeek.setDate(startOfWeek.getDate() - diff);
   startOfWeek.setHours(0, 0, 0, 0);
 
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+  const endOfLastMonth = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    0,
+    23,
+    59,
+    59,
+    999
+  );
   const startOfYear = new Date(now.getFullYear(), 0, 1);
 
-  const toFullDate = (timeStr: string) => new Date(`${todayStr}T${timeStr}`);
+  const toFullDate = (baseDate: Date, timeStr: string) => {
+    const [hours, minutes] = timeStr.split(":").map(Number);
+    const fullDate = new Date(baseDate);
+    fullDate.setHours(hours, minutes, 0, 0);
+    return fullDate;
+  };
 
   return logs.reduce((total, log) => {
-    const start = toFullDate(log.startTime);
-    const end = toFullDate(log.endTime);
+    const logDate = new Date(log.createdAt); // use log.createdAt as the actual date
+    const start = toFullDate(logDate, log.startTime);
+    const end = toFullDate(logDate, log.endTime);
     const duration = (end.getTime() - start.getTime()) / 1000; // seconds
 
     switch (period) {
